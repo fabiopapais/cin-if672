@@ -19,7 +19,7 @@ void merge(int* array, int l, int r) {
             array[i] = temp_array[i2++];
         }
     }
-    delete temp_array;
+    delete[] temp_array;
 }
 
 void merge_sort(int* array, int l, int r) {
@@ -45,6 +45,6 @@ int main() {
     for(int i=0; i<array_size; i++) printf("%d ", unsorted_array[i]);
     printf("\n");
 
-    delete unsorted_array;
+    delete[] unsorted_array;
     return 0;
 }

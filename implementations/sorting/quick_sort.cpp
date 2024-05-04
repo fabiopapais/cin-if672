@@ -13,12 +13,12 @@ int hoare_partition(int* array, int l, int r) {
     do {
         do {
             i++;
-        } while (array[i] < pivot || i < r);
+        } while (!(array[i] >= pivot || i >= r));
         do {
             j--;
-        } while (array[j] > pivot);
+        } while (!(array[j] <= pivot));
         swap(&array[i], &array[j]);
-    } while (i < j);
+    } while (!(i >= j)); // "until"
     // There's a last case when i >= j (pointers cross)
     // so we need to undo the last swap made by this case
     swap(&array[i], &array[j]);
@@ -49,6 +49,6 @@ int main() {
     for (int i = 0; i < array_size; i++) printf("%d ", unsorted_array[i]);
     printf("\n");
 
-    delete unsorted_array;
+    delete[] unsorted_array;
     return 0;
 }
