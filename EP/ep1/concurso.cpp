@@ -73,11 +73,13 @@ int main() {
         
         cout << "cargo " << i + 1 << ":" << endl;
         for (int j = applicants_qty - 1; j >= applicants_qty - jobs_qty; j--) {
-            if (applicants[j].name == "") {
+            if (j < 0) {
                 cout << "x" << endl;
             } else {
                 cout << applicants[j].name << endl;
             }
         }
+
+        delete[] applicants;
     }
 }
