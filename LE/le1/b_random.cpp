@@ -34,7 +34,7 @@ void quicksort(int* array, int l, int r) {
 int main() {
     unsigned int n, k; scanf("%d %d", &n, &k);
     
-    int* array = new int[n]; 
+    int* array = new int[n];
     for (int i = 0; i < n; i++) {
         scanf("%d", &array[i]);
     }
