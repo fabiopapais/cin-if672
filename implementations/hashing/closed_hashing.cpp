@@ -32,10 +32,10 @@ public:
         // return i;
 
         // Quadratic probing
-        // return ((i*i) + i) / 2;
+        return ((i*i) + i) / 2;
 
         // Pseudo-random probing
-        return perm[i - 1];
+        // return perm[i - 1];
 
         // Double hashing
         // return i * h2(key);
@@ -48,7 +48,6 @@ public:
 
     void insert(string key, string value) {
         if (cnt < m) {
-            cout << "cheguei aqui";
             hash_insert(key, value);
         }
     }
@@ -84,7 +83,7 @@ private:
     }
     vector<int> perm; // permutation for pseudo-random probing
 
-    // Creates arbitrary permutation array
+    // Creates arbitrary random permutation array
     vector<int> create_perm(int size) {
         vector<int> temp_range(size);
         for (int i = 0; i < size; i++) temp_range[i] = i + 1;
@@ -103,7 +102,7 @@ private:
         int pos = initial_position = h(key);
         for (int i = 1;
              (H[pos].key != "" && H[pos].value != "0") // cell is not empty
-             && (i <= m);                              // prevents infty loop when array is full
+             && (i <= m);                              // prevents infinite loop when array is full
              i++) {
             cout << pos << " ";
             pos = (initial_position + probe(key, i)) % m; // next on probe sequence
@@ -127,11 +126,11 @@ private:
         for (int i = 1;
              ((H[pos].key != key && H[pos].key != "")       // cell is not empty
               || (H[pos].key == "" && H[pos].value == "1")) // cell is empty, but was filled before
-             && (i <= m);                                   // prevents infty loop when array is full
+             && (i <= m);                                   // prevents infinite loop when array is full
              i++) {
             pos = (initial_position + probe(key, i)) % m; // Next on probe sequence
         }
-        if (key == H[pos].key) {
+        if (key == H[pos].key) { // Ensures position find has key
             return pos;
         } else {
             return -1; // k not in hash table
