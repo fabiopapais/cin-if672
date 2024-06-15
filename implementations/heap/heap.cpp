@@ -5,6 +5,7 @@ using namespace std;
 // defines element representing empty node
 #define EMPTY_ELEMENT -1;
 
+// max-heap with int key values
 class Heap {
 public:
     // default empty array constructor
@@ -18,6 +19,8 @@ public:
         array = new int[max_size + 1];
 
         // fills array with starting elements
+        // if it is always started with max_size elements, 
+        // use a single pointer attribution 
         for (int i = 1; i <= max_size; i++) {
             if (i <= starting_size) {
                 array[i] = starting_elements[i - 1];
@@ -28,22 +31,30 @@ public:
         bottom_up(); // heapify
     }
 
-    void add() {
-        return;
+    // adds value and finds correct index with top_down
+    void add(int key) {
+        if (size >= max_size) return;
+        array[size + 1] = key;
+        size++;
+        top_down(size + 1); // finds correct place to new added item
     }
 
+    // deletes root value and heapifies with bottom_up
     void max_delete() {
+        if (size <= 0) return;
         // exchanging root with last key and deleting root (max)
-        array[1] = array[max_size];
-        array[max_size] = EMPTY_ELEMENT;
+        array[1] = array[size];
+        array[size] = EMPTY_ELEMENT;
         // decrease size by 1
         size--;
-        // heapify tree
+        // heapify whole tree (use index to optimize)
         bottom_up();
     }
 
     // prints all elements in a binary tree representation
     void pretty_print() {
+        cout << "size: " << size << endl;
+        cout << "max_size: " << max_size << endl;
         pretty_printhelp(1, 0);
     }
     // prints all elements in the array sequentially
@@ -55,9 +66,8 @@ public:
     }
 
     int size;
-
 private:
-    void bottom_up() {
+    void bottom_up() { // Note that it heapifies the whole tree
         for (int i = (int) max_size / 2; i > 0; i--) {
             int k = i; // current position of the i-th internal node
             int v = array[k]; // value of the i-th internal node
@@ -65,7 +75,7 @@ private:
             while (!heap && 2* k <= max_size) {
                 int j = 2 * k;
                 if (j < max_size) {
-                    if (array[j] < array[j+1]) { j++; }
+                    if (array[j] < array[j+1]) { j++; } // goes to biggest child, change it here to make max and minimum heaps
                 }
                 if (v >= array[j]) { // nodes in order, change it here to make max and minimum heaps 
                     heap = true;
@@ -78,8 +88,16 @@ private:
         }
     }
 
-    void top_down() {
-        return;
+    void top_down(int index) {
+        if (index <= 1) return;
+        if (array[(int) index / 2] >= array[index]) { // nodes in order, change it here to make max and minimum heaps 
+            return;
+        } else {
+            int temp = array[(int) index / 2];
+            array[(int) index / 2] = array[index];
+            array[index] = temp;
+            top_down((int) index / 2);
+        }
     }
 
     void pretty_printhelp(int index, int level) {
@@ -107,6 +125,15 @@ int main() {
     heap.pretty_print();
     heap.max_delete();
     heap.pretty_print();
+    heap.max_delete();
+    heap.add(9);
+    heap.pretty_print();
+    // heap.max_delete();
+    // heap.pretty_print();
+    // heap.max_delete();
+    // heap.pretty_print();
+    // heap.max_delete();
+    // heap.pretty_print();
     heap.vanilla_print();
 
     return 0;
