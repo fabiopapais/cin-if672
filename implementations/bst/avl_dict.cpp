@@ -4,33 +4,33 @@ using namespace std;
 
 #define NOT_FOUND -1
 
-// int to int bst node 
+// int to int dict element
 class BSTNode {
 public:
-    BSTNode(int key, int element) {
-        this->key = key;
-        this->element = element;
+    BSTNode(int key, int element): key(key), element(element) {
         left = right = NULL;
+        height = 0;
     }
 
     int key;
     int element;
+    int height;
     BSTNode* left;
     BSTNode* right;
 };
 
-// int to int dict implemented as BST 
-class BST {
+class AVL {
 public:
-    // default constructor
-    BST() {
+    AVL() {
         root = NULL;
         nodecount = 0;
     }
 
-    // returns element with desired key or -1 if not found
-    int find(int key) {
-        return findhelp(root, key);
+    // returns NOT_FOUND if not found or element otherwise
+    int find(int key) { 
+        BSTNode* temp = findhelp(root, key);
+        if (temp == NULL) return NOT_FOUND;
+        return temp->element; 
     }
 
     // inserts key with element at correct position in bst 
@@ -38,20 +38,15 @@ public:
         root = inserthelp(root, key, element);
         nodecount++;
     }
-    
-    // returns removed element if it exists;
+
     int remove(int key) {
-        int temp = findhelp(root, key);
-        if (temp != NOT_FOUND) {
+        BSTNode* temp = findhelp(root, key);
+        if (temp != NULL) {
             root = removehelp(root, key);
             nodecount--;
+            return temp->element;
         }
-        return temp;
-    }
-
-    // clears all nodes and frees memory
-    void clear() {
-        clearhelp(root);
+        return NOT_FOUND;
     }
 
     void preorder_print() {
@@ -72,13 +67,13 @@ public:
     }
 
 private:
-    int findhelp(BSTNode* rt, int key) {
-        if (rt == NULL) return NOT_FOUND;
+    BSTNode* findhelp(BSTNode* rt, int key) {
+        if (rt == NULL) return NULL;
         if (rt->key > key) {
             return findhelp(rt->left, key);
         } else if (rt->key == key) {
-            return rt->element;
-        }  else {
+            return rt;
+        } else {
             return findhelp(rt->right, key);
         }
     }
@@ -87,13 +82,27 @@ private:
         if (rt == NULL) return new BSTNode(key, element);
         if (rt->key > key) {
             rt->left = inserthelp(rt->left, key, element);
-        } else { // repeated keys go to right subtree
+        } else { // repeated elements into the right
             rt->right = inserthelp(rt->right, key, element);
         }
+        // rotation (balance)
+        rt->height = 1 + max(h(rt->left), h(rt->right));
+        int balance = getBalance(rt);
+        if (balance < -1 && key >= rt->right->key) return leftRotate(rt); // L-rotation
+        if (balance > 1 && key < rt->left->key) return rightRotate(rt); // R-rotation
+        if (balance > 1 && key >= rt->left->key) { // LR-rotation
+            rt->left = leftRotate(rt->left);
+            return rightRotate(rt);
+        }
+        if (balance < -1 && key < rt->right->key) { // RL-rotation
+            rt->right = rightRotate(rt->right);
+            return leftRotate(rt);
+        }
         return rt;
+
     }
 
-    BSTNode* removehelp(BSTNode* rt, int key) { // may work
+    BSTNode* removehelp(BSTNode* rt, int key) {
         if (rt == NULL) return NULL;
         if (rt->key > key) {
             rt->left = removehelp(rt->left, key);
@@ -107,6 +116,24 @@ private:
                 rt->element = temp->element;
                 rt->key = temp->key;
                 rt->right = deletemin(rt->right);
+            }
+        }
+        // rotation (balance)
+        rt->height = 1 + max(h(rt->left), h(rt->right));
+        int balance = getBalance(rt);
+        if (balance > 1) { // left heavy
+            if (getBalance(rt->left) >= 0) return rightRotate(rt);
+            else { // LR-rotation
+                rt->left = leftRotate(rt->left);
+                return rightRotate(rt);
+            }
+        } else if (balance < -1) { // right heavy
+            if (getBalance(rt->right) <= 0) {
+                return leftRotate(rt);
+            }
+            else { // RL-rotation
+                rt->right = rightRotate(rt->right);
+                return leftRotate(rt);
             }
         }
         return rt;
@@ -127,12 +154,40 @@ private:
         return rt;
     }
 
-    void clearhelp(BSTNode* rt) {
-        if (rt != NULL) {
-            clearhelp(rt->left);
-            clearhelp(rt->right);
-            delete rt;
-        }
+    int getBalance(BSTNode* rt) {
+        if (rt == NULL) return 0;
+        return h(rt->left) - h(rt->right);
+    }
+
+    int h(BSTNode* rt) {
+        if (rt == NULL) return -1;
+        return rt->height;
+    }
+
+    BSTNode* rightRotate(BSTNode* rt) {
+        BSTNode* l = rt->left;
+        BSTNode* lr = l->right;
+        // making rotation
+        l->right = rt;
+        rt->left = lr;
+        // calculating heights
+        rt->height = 1 + max(h(rt->left), h(rt->right));
+        l->height = 1 + max(h(l->left), h(l->right));
+
+        return l;
+    }
+
+    BSTNode* leftRotate(BSTNode* rt) {
+        BSTNode* r = rt->right;
+        BSTNode* rl = r->left;
+        // making rotation
+        r->left = rt;
+        rt->right = rl;
+        // calculating heights
+        rt->height = 1 + max(h(rt->left), h(rt->right));
+        r->height = 1 + max(h(r->left), h(r->right));
+
+        return r;
     }
 
     void preorder_printhelp(BSTNode* rt) {
@@ -167,6 +222,11 @@ private:
             cout << rt->key << ":" << rt->element << endl;
             pretty_printhelp(rt->left, iteration + 1);
             pretty_printhelp(rt->right, iteration + 1);
+        } else {
+            for (int i = 0; i < iteration; i++) {
+                cout << "  ";
+            }
+            cout << "empty" << endl;
         }
     }
 
@@ -176,32 +236,19 @@ private:
 
 int main() {
     int n; cin >> n;
-    BST bst = BST();
+    AVL avl = AVL();
     for (int i = 0; i < n; i++) {
         int current_key; cin >> current_key;
-        bst.insert(current_key, 0);
+        avl.insert(current_key, 0);
     }
 
-    bst.remove(7);
-    bst.remove(20);
-    
-    cout << "Pre order:" << endl;
-    bst.preorder_print();
+    avl.pretty_print();
 
-    cout << "In order:" << endl;
-    bst.inorder_print();
+    avl.remove(2);
 
-    cout << "Post order:" << endl;
-    bst.posorder_print();
+    avl.pretty_print();
 
+    avl.remove(3);
 
-    bst.pretty_print();
-
-    bst.remove(3);
-
-    bst.pretty_print();
-
-    bst.clear();
-    
-    return 0;
+    avl.pretty_print();
 }
