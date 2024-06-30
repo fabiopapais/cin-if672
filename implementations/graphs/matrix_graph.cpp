@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <stack>
 using namespace std;
 
 #define VISITED 1
@@ -76,6 +77,13 @@ public:
         cout << endl;
     }
 
+    // must remeber to delete stack pointer
+    stack<int>* toposort(int v) {
+        stack<int>* sorted = new stack<int>();
+        toposorthelp(v, sorted);
+        return sorted;
+    }
+
     void printMatrix() {
         for (const vector<int> list : matrix) {
             for (const int element : list) {
@@ -121,24 +129,39 @@ private:
         }
     }
 
+    void toposorthelp(int v, stack<int>* s) {
+        mark[v] = VISITED;
+        int w = first(v);
+        while (w < n) {
+            if (mark[w] == UNVISITED) {
+                toposorthelp(w, s);
+            }
+            w = next(v, w);
+        }
+        s->push(v);
+    }
+
     vector<vector<int>> matrix;
     int numEdge;
     vector<int> mark;
 };
 
 int main() {
-    Graph graph = Graph(6);
-    graph.setEdge(0, 2, 1);
-    // graph.setEdge(0, 4, 1);
-    graph.setEdge(2, 3, 1);
-    // graph.setEdge(2, 1, 1);
-    graph.setEdge(2, 5, 1);
-    // graph.setEdge(1, 5, 1);
-    graph.setEdge(5, 3, 1);
-    // graph.setEdge(5, 4, 1);
+    Graph graph = Graph(7);
+    graph.setDirectedEdge(0, 2, 1);
+    graph.setDirectedEdge(0, 1, 1);
+    graph.setDirectedEdge(1, 5, 1);
+    graph.setDirectedEdge(1, 3, 1);
+    graph.setDirectedEdge(1, 4, 1);
+    graph.setDirectedEdge(2, 3, 1);
+    graph.setDirectedEdge(3, 4, 1);
+    graph.setDirectedEdge(4, 6, 1);
     graph.printMatrix();
     cout << endl;
-    graph.dfsGraphTraverse();
-    graph.bfsGraphTraverse();
+    stack<int>* sorted = graph.toposort(0);
+    while (!sorted->empty()) {
+        cout << sorted->top() << " ";
+        sorted->pop();
+    }
     return 0;
 }
