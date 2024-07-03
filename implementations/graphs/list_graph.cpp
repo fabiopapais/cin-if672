@@ -10,37 +10,68 @@ using namespace std;
 // weighted directed/nondirected graph implementation
 class Graph {
 public:
-    Graph(int n) : matrix(n, vector<int>(n, 0)), mark(n, 0), numEdge(0), n(n) {}
+    // first: node index, second: edge weight
+    Graph(int n) : adjacency_list(n, vector<pair<int, int>>()), mark(n, UNVISITED), numEdge(0), n(n) {}
 
     int e() { return numEdge; }
     
     // returns the first connected node index, if any
     int first(int v) {
-        for (int i = 0; i < n; i++) {
-            if (matrix[v][i] != 0) return i;
-        }
-        return n; // if not found, any number higher than n-1 is invalid
-    }
-
-    // returns the first connected node index after w, if any
-    int next(int v, int w) {
-        for (int i = w + 1; i < n; i++) {
-            if (matrix[v][i] != 0) return i;
+        if (adjacency_list[v].size() > 0) {
+            return adjacency_list[v][0].first;
         }
         return n;
     }
 
+    // returns the first connected node index after w, if any
+    int next(int v, int w) {
+    for (int i = 0; i < adjacency_list[v].size(); i++) {
+        if (adjacency_list[v][i].first == w) {
+            if (i + 1 < adjacency_list[v].size()) { // next index is in the limit
+                return adjacency_list[v][i + 1].first; // returns the next element
+            } else {
+                break;
+            }
+        }
+    }
+    return n;
+}
+
     // sets connection with weight wt at [i][j]
     void setDirectedEdge(int i, int j, int wt) {
         if (wt == 0) return; // "error"
-        if (matrix[i][j] == 0) numEdge++;
-        matrix[i][j] = wt; // always updates weight
+
+        int adjacency_node_size = adjacency_list[i].size();
+        pair<int, int> new_node = pair<int, int>(j, wt);
+        if (adjacency_node_size > 0) { // needs to look at correct position to add
+            for (int k = 0; k < adjacency_node_size; k++) {
+                if (adjacency_list[i][k].first > j) { // inserts new node at correct position
+                    adjacency_list[i].insert(adjacency_list[i].begin() + k, new_node);
+                    numEdge++;
+                    return;
+                } else if (adjacency_list[i][k].first == j) { // updated node
+                    adjacency_list[i][k] = new_node;
+                    return;
+                } else if (k == adjacency_node_size - 1) { // inserts new node at correct position
+                    adjacency_list[i].push_back(new_node);
+                    numEdge++;
+                    return;   
+                }
+            }
+        } else { // simply adds edge at the end
+            adjacency_list[i].push_back(new_node);
+            numEdge++;
+        }
     }
 
     // deletes connection at [i][j] 
     void delDirectedEdge(int i, int j) {
-        if (matrix[i][j] != 0) numEdge--;
-        matrix[i][j] = 0;
+        for (int k = 0; k < adjacency_list[i].size(); k++) {
+            if (adjacency_list[i][k].first == j) { // finds node at correct index
+                adjacency_list[i].erase(adjacency_list[i].begin() + k);
+                numEdge--;
+            }
+        }
     }
 
     void setEdge(int i, int j, int wt) {
@@ -57,6 +88,7 @@ public:
         for (int v = 0; v < n; v++) {
             mark[v] = UNVISITED;
         }
+        
         for (int v = 0; v < n; v++) { // assures searching into unconnected nodes
             if (mark[v] == UNVISITED) {
                 DFS(v);
@@ -84,10 +116,10 @@ public:
         return sorted;
     }
 
-    void printMatrix() {
-        for (const vector<int> list : matrix) {
-            for (const int element : list) {
-                cout << element << " ";
+    void printAdjacencyList() {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < adjacency_list[i].size(); j++) {
+                cout << adjacency_list[i][j].first << " ";
             }
             cout << endl;
         }
@@ -141,12 +173,27 @@ private:
         s->push(v);
     }
 
-    vector<vector<int>> matrix;
+    // first: node index, second: edge weight
+    vector<vector<pair<int, int>>> adjacency_list;
     int numEdge;
     vector<int> mark;
 };
 
 int main() {
+    /*
+    Graph graph = Graph(6);
+    graph.setEdge(0, 4, 1);
+    graph.setEdge(0, 2, 1);
+    graph.setEdge(2, 3, 1);
+    graph.setEdge(2, 1, 1);
+    graph.setEdge(2, 5, 1);
+    graph.setEdge(1, 5, 1);
+    graph.setEdge(5, 3, 1);
+    graph.setEdge(5, 4, 1);
+    graph.printAdjacencyList();
+    graph.dfsGraphTraverse();
+    graph.bfsGraphTraverse();
+    */
     Graph graph = Graph(7);
     graph.setDirectedEdge(0, 2, 1);
     graph.setDirectedEdge(0, 1, 1);
@@ -156,13 +203,11 @@ int main() {
     graph.setDirectedEdge(2, 3, 1);
     graph.setDirectedEdge(3, 4, 1);
     graph.setDirectedEdge(4, 6, 1);
-    graph.printMatrix();
-    cout << endl;
+    graph.printAdjacencyList();
     stack<int>* sorted = graph.toposort(0);
     while (!sorted->empty()) {
         cout << sorted->top() << " ";
         sorted->pop();
     }
-    delete[] sorted;
     return 0;
 }
