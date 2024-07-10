@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <queue>
 #include <stack>
 using namespace std;
@@ -43,25 +44,18 @@ public:
 
         int adjacency_node_size = adjacency_list[i].size();
         pair<int, int> new_node = pair<int, int>(j, wt);
-        if (adjacency_node_size > 0) { // needs to look at correct position to add
+        if (adjacency_node_size > 0) { // needs to look at correct position to update
             for (int k = 0; k < adjacency_node_size; k++) {
-                if (adjacency_list[i][k].first > j) { // inserts new node at correct position
-                    adjacency_list[i].insert(adjacency_list[i].begin() + k, new_node);
-                    numEdge++;
-                    return;
-                } else if (adjacency_list[i][k].first == j) { // updated node
+                if (adjacency_list[i][k].first == j) { // updated node
                     adjacency_list[i][k] = new_node;
+                    sort(adjacency_list[i].begin(), adjacency_list[i].end()); // optional
                     return;
-                } else if (k == adjacency_node_size - 1) { // inserts new node at correct position
-                    adjacency_list[i].push_back(new_node);
-                    numEdge++;
-                    return;   
                 }
             }
-        } else { // simply adds edge at the end
-            adjacency_list[i].push_back(new_node);
-            numEdge++;
         }
+        adjacency_list[i].push_back(new_node);
+        sort(adjacency_list[i].begin(), adjacency_list[i].end()); // optional
+        numEdge++;
     }
 
     // deletes connection at [i][j] 
@@ -194,20 +188,17 @@ int main() {
     graph.dfsGraphTraverse();
     graph.bfsGraphTraverse();
     */
-    Graph graph = Graph(7);
-    graph.setDirectedEdge(0, 2, 1);
-    graph.setDirectedEdge(0, 1, 1);
-    graph.setDirectedEdge(1, 5, 1);
-    graph.setDirectedEdge(1, 3, 1);
-    graph.setDirectedEdge(1, 4, 1);
-    graph.setDirectedEdge(2, 3, 1);
-    graph.setDirectedEdge(3, 4, 1);
-    graph.setDirectedEdge(4, 6, 1);
+    Graph graph = Graph(6);
+    graph.setEdge(0, 2, 1);
+    graph.setEdge(0, 4, 1);
+    graph.setEdge(2, 3, 1);
+    graph.setEdge(2, 1, 1);
+    graph.setEdge(2, 5, 1);
+    graph.setEdge(1, 5, 1);
+    graph.setEdge(3, 5, 1);
+    graph.setEdge(4, 5, 1);
     graph.printAdjacencyList();
-    stack<int>* sorted = graph.toposort(0);
-    while (!sorted->empty()) {
-        cout << sorted->top() << " ";
-        sorted->pop();
-    }
+    graph.dfsGraphTraverse();
+    
     return 0;
 }
