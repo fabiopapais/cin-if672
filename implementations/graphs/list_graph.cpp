@@ -8,7 +8,7 @@ using namespace std;
 #define VISITED 1
 #define UNVISITED 0
 
-// weighted directed/nondirected graph implementation
+// directed/nondirected graph implementation
 class Graph {
 public:
     // first: node index, second: edge weight
